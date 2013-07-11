@@ -1,0 +1,57 @@
+# Created by Puppet (do not modify directly)
+# This nagios.conf vhost sets up web access on a non-standard port
+
+# Originated from:
+# SAMPLE CONFIG SNIPPETS FOR APACHE WEB SERVER
+# Last Modified: 11-26-2005
+#
+# This file contains examples of entries that need
+# to be incorporated into your Apache web server
+# configuration file.  Customize the paths, etc. as
+# needed to fit your system.
+
+ScriptAlias /nagios/cgi-bin/ "/usr/lib64/nagios/cgi-bin/"
+Alias /nagios "/usr/share/nagios/html"
+
+<Directory "/usr/lib64/nagios/cgi-bin/">
+    Options ExecCGI
+    # SSLRequireSSL
+    AllowOverride None
+<% if webadmin_limitlocalhost -%>
+    Order deny,allow
+    Deny from all
+    Allow from 127.0.0.1
+<% else -%>
+    Order allow,deny
+    Allow from all
+<% end -%>
+    AuthName "Nagios Access"
+    AuthType Basic
+    AuthUserFile /etc/nagios/passwd
+    Require valid-user
+</Directory>
+
+<Directory "/usr/share/nagios/html">
+    Options None
+    # SSLRequireSSL
+    AllowOverride None
+<% if webadmin_limitlocalhost -%>
+    Order deny,allow
+    Deny from all
+    Allow from 127.0.0.1
+<% else -%>
+    Order allow,deny
+    Allow from all
+<% end -%>
+    AuthName "Nagios Access"
+    AuthType Basic
+    AuthUserFile /etc/nagios/passwd
+    Require valid-user
+</Directory>
+
+Listen <%= webadmin_port %>
+<VirtualHost *:<%= webadmin_port %>>
+   ServerAdmin <%= user_email %>
+   DocumentRoot /usr/share/nagios/html
+</VirtualHost>
+
