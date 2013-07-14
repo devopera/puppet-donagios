@@ -30,7 +30,7 @@ class donagios::server (
   if ($purge) {
     # clear down previous nagios config if it exists
     exec { 'nagios-cleardown' :
-      path => '/usr/bin;/bin',
+      path => '/usr/bin:/bin',
       command => 'rm -rf /etc/nagios/conf.d/nagios_*',
       before => Class['nagios::headless'],
     }
