@@ -13,6 +13,9 @@ class donagios::server (
   $webadmin_user = 'admin',
   $webadmin_password = 'admLn**',
 
+  # refresh config each run
+  $purge = true,
+
   # end of class arguments
   # ----------------------
   # begin class
@@ -22,6 +25,15 @@ class donagios::server (
   # use resource collector to hack nagios::headless->init->CentOS->base
   File <| title == 'nagios_cgi_cfg' |> {
     notify => undef,
+  }
+ 
+  if ($purge) {
+    # clear down previous nagios config if it exists
+    exec { 'nagios-cleardown' :
+      path => '/usr/bin;/bin',
+      command => 'rm -rf /etc/nagios/conf.d/nagios_*',
+      before => Class['nagios::headless'],
+    }
   }
 
   # install nagios but don't ask it to install a webserver
