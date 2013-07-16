@@ -77,7 +77,6 @@ class donagios::server (
   exec { 'donagios-open-webadmin-files-cmd' :
     path => '/bin:/usr/bin',
     command => "chown -R ${user}:www-data /usr/share/nagios/html && chmod -R 640 /usr/share/nagios/html && find /usr/share/nagios/html -type d -exec chmod 750 {} \;",
-    require => [Class['nagios::headless']],
   }->
 
   # open up access for web to nagios config directory
