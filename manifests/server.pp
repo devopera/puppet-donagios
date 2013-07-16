@@ -76,14 +76,14 @@ class donagios::server (
   # open up access for apache to nagios html files
   exec { 'donagios-open-webadmin-files-cmd' :
     path => '/bin:/usr/bin',
-    command => 'chmod -R 755 /usr/share/nagios/html',
+    command => "chown -R ${user}:www-data /usr/share/nagios/html && chmod -R 640 /usr/share/nagios/html && find /usr/share/nagios/html -type d -exec chmod 750 {} \;",
     require => [Class['nagios::headless']],
   }->
 
-  # open up access for apache to nagios html files
+  # open up access for web to nagios config directory
   exec { 'donagios-access-for-common-user' :
     path => '/bin:/usr/bin',
-    command => "chown -R ${user} /etc/nagios",
+    command => "chown -R ${user}:nagios /etc/nagios && chmod -R 660 /etc/nagios && find /etc/nagios -type d -exec chmod 770 {} \;",
   }->
 
   # create symlink in user's home directory
