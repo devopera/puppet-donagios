@@ -64,7 +64,7 @@ class donagios::server (
   # regenerate nagios password
   exec { 'donagios-set-webadmin-password-cmd' :
     path => '/bin:/usr/bin',
-    command => "htpasswd -bc /etc/nagios/passwd '${webadmin_user}' '${webadmin_password}'",
+    command => "htpasswd -bc /etc/nagios/htpasswd.users '${webadmin_user}' '${webadmin_password}'",
   }->
 
   # overwrite nagios apache config with template
