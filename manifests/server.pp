@@ -77,6 +77,20 @@ class donagios::server (
   exec { 'donagios-open-webadmin-files-cmd' :
     path => '/bin:/usr/bin',
     command => 'chmod -R 755 /usr/share/nagios/html',
+    require => [Class['nagios::headless']],
+  }->
+
+  # open up access for apache to nagios html files
+  exec { 'donagios-access-for-common-user' :
+    path => '/bin:/usr/bin',
+    command => "chown -R ${user} /etc/nagios",
+  }->
+
+  # create symlink in user's home directory
+  file { 'donagios-symlink':
+    path => "/home/${user}/nagios",
+    ensure => 'link',
+    target => "/etc/nagios",
   }
 
   # open up firewall port if we're not confining it to localhost
