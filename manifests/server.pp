@@ -31,7 +31,7 @@ class donagios::server (
     # clear down previous nagios config if it exists
     exec { 'nagios-cleardown' :
       path => '/usr/bin:/bin',
-      command => 'rm -rf /etc/nagios/conf.d/nagios_*',
+      command => 'rm -rf /etc/nagios/conf.d/nagios_{command,host,service}.cfg',
       before => Class['nagios::headless'],
     }
   }
