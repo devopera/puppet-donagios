@@ -26,7 +26,7 @@ Alias /nagios "/usr/share/nagios/html"
     Allow from all
 <% end -%>
     AuthName "Nagios Access"
-    AuthType Digest
+    AuthType Basic
     AuthUserFile /etc/nagios/htpasswd.users
     Require valid-user
 </Directory>
@@ -44,7 +44,7 @@ Alias /nagios "/usr/share/nagios/html"
     Allow from all
 <% end -%>
     AuthName "Nagios Access"
-    AuthType Digest
+    AuthType Basic
     AuthUserFile /etc/nagios/htpasswd.users
     Require valid-user
 </Directory>
