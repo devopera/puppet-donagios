@@ -88,10 +88,15 @@ class donagios::server (
   }->
 
   # create symlink in user's home directory
-  file { 'donagios-symlink':
-    path => "/home/${user}/nagios",
+  file { 'donagios-config-symlink':
+    path => "/home/${user}/nagios-config",
     ensure => 'link',
     target => "/etc/nagios",
+  }->
+  file { 'donagios-web-interface-symlink':
+    path => "/home/${user}/nagios-html",
+    ensure => 'link',
+    target => "/usr/share/nagios/html/",
   }
 
   # open up firewall port if we're not confining it to localhost
