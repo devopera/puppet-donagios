@@ -31,7 +31,9 @@ class donagios::server (
     # clear down previous nagios config if it exists
     exec { 'nagios-cleardown' :
       path => '/usr/bin:/bin',
-      command => 'rm -rf /etc/nagios/conf.d/nagios_{command,host,service}.cfg',
+      # problems regenerating command when refreshed
+      # command => 'rm -rf /etc/nagios/conf.d/nagios_{command,host,service}.cfg',
+      command => 'rm -rf /etc/nagios/conf.d/nagios_{host,service}.cfg',
       before => Class['nagios::headless'],
     }
   }
@@ -55,7 +57,7 @@ class donagios::server (
     check_command => 'check_all_disks',
   }->
 
-  # clean up bad permission dir
+  # clean up dir with wrong permissions
   exec { 'donagios-permission-cleanup-cmd' :
     path => '/bin:/usr/bin',
     command => 'rm -rf /var/spool/nagios/cmd',
