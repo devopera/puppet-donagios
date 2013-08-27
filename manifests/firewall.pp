@@ -12,7 +12,7 @@ class donagios::firewall (
 
 ) {
 
-  @firewall { "donagios-webadmin-${webadmin_port}":
+  @docommon::fireport { "donagios-webadmin-${webadmin_port}":
     port => $webadmin_port,
     protocol => 'tcp',
   }
