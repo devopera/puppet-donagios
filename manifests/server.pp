@@ -6,6 +6,8 @@ class donagios::server (
 
   $user = 'web',
   $user_email = 'web@localhost',
+  $group = 'nagios',
+  $group_web = 'www-data',
 
   # by default, setup the admin console on non-standard port and limit access to localhost(/tunnels)
   $webadmin_port = 43326,
@@ -23,8 +25,15 @@ class donagios::server (
 ) {
 
   # use resource collector to hack nagios::headless->init->CentOS->base
+  # don't notify apache
   File <| title == 'nagios_cgi_cfg' |> {
     notify => undef,
+  }
+  # all nagios resources should be web:nagios
+  # no wildcards/regex in resource collectors, so duplication
+  File <| title == 'nagios_main_cfg' or title == 'nagios_cgi_cfg' or title == 'nagios_htpasswd' or title == 'nagios_private' or title == 'nagios_private_resource_cfg' or title == 'nagios_confd' |> {
+    owner => $user,
+    group => $group,
   }
  
   if ($purge) {
