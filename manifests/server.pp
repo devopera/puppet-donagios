@@ -36,7 +36,8 @@ class donagios::server (
     group => $group,
   }
  
-  if ($purge) {
+  # disabling for now, because it shouldn't be necessary
+  if (false) {
     # clear down previous nagios config if it exists
     exec { 'nagios-cleardown' :
       path => '/usr/bin:/bin',
@@ -76,12 +77,16 @@ class donagios::server (
   exec { 'donagios-set-webadmin-password-cmd' :
     path => '/bin:/usr/bin',
     command => "htpasswd -bc /etc/nagios/htpasswd.users '${webadmin_user}' '${webadmin_password}'",
+    user => $user,
+    group => $group,
   }->
 
   # overwrite nagios apache config with template
   file { 'donagios-overwrite-vhost-config' :
     path => '/etc/httpd/conf.d/nagios.conf',
     content => template('donagios/nagios.conf.erb'),
+    owner => $user,
+    group => $group,
   }->
 
   # open up access for apache to nagios html files
