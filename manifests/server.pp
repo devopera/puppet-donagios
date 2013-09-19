@@ -15,6 +15,9 @@ class donagios::server (
   $webadmin_user = 'admin',
   $webadmin_password = 'admLn**',
 
+  # flag to stop this run realising nagios services
+  $ignore_vnagios = false,
+
   # refresh config each run
   $purge = true,
 
@@ -35,13 +38,27 @@ class donagios::server (
     owner => $user,
     group => $group,
   }
- 
-  # disabling for now, because it shouldn't be necessary
-  if ($purge) {
-    # tell all virtual resource realisations to wait for this
-    File <| title == 'nagios_confd' |> {
-      require => [Exec['nagios-cleardown']]
+
+  # test to see if this is a dummy run (creating a new puppetmaster)
+  if ($ignore_vnagios) {
+    $real_purge = false
+    Nagios_host <| |> {
+      noop => true,
     }
+    Nagios_service <| |> {
+      noop => true,
+    }
+  } else {
+    $real_purge = $purge
+  }
+
+  # disabling for now, because it shouldn't be necessary
+  if ($real_purge) {
+# tell all virtual resource realisations to wait for this
+#    File <| title == 'nagios_confd' |> {
+# suspect this require statement is overwriting some really important requirements!
+#      require => [Exec['nagios-cleardown']]
+#    }
   
     # clear down previous nagios config if it exists
     exec { 'nagios-cleardown' :
