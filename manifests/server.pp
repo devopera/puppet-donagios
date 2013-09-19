@@ -37,7 +37,12 @@ class donagios::server (
   }
  
   # disabling for now, because it shouldn't be necessary
-  if (false) {
+  if ($purge) {
+    # tell all virtual resource realisations to wait for this
+    File <| title == 'nagios_confd' |> {
+      require => [Exec['nagios-cleardown']]
+    }
+  
     # clear down previous nagios config if it exists
     exec { 'nagios-cleardown' :
       path => '/usr/bin:/bin',
