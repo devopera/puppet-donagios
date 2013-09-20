@@ -42,10 +42,25 @@ class donagios::server (
   # test to see if this is a dummy run (creating a new puppetmaster)
   if ($ignore_vnagios) {
     $real_purge = false
-    Nagios_host <| |> {
+    # create a single placeholder host/service (keep nagios happy)
+    nagios_host { 'demo-placeholder-host' :
+      host_name => 'localhost',
+      address => '127.0.0.1',
+      use => 'generic-host',
+      tag => 'demo-placeholder',
+    }
+    nagios_service { 'demo-placeholder-service' :
+      host_name => 'localhost',
+      service_description => 'demo-service',
+      check_command => 'check_all_disks',
+      use => 'generic-service',
+      tag => 'demo-placeholder',
+    }
+    # tell all the other hosts/services not to be created
+    Nagios_host <| tag != 'demo-placeholder' |> {
       noop => true,
     }
-    Nagios_service <| |> {
+    Nagios_service <| tag != 'demo-placeholder' |> {
       noop => true,
     }
   } else {
