@@ -109,14 +109,6 @@ class donagios::server (
     command => 'rm -rf /var/spool/nagios/cmd',
   }->
 
-  # regenerate nagios password
-  exec { 'donagios-set-webadmin-password-cmd' :
-    path => '/bin:/usr/bin',
-    command => "htpasswd -bc /etc/nagios/htpasswd.users '${webadmin_user}' '${webadmin_password}'",
-    user => $user,
-    group => $group,
-  }->
-
   # overwrite nagios apache config with template
   file { 'donagios-overwrite-vhost-config' :
     path => '/etc/httpd/conf.d/nagios.conf',
@@ -147,6 +139,18 @@ class donagios::server (
     path => "/home/${user}/nagios-html",
     ensure => 'link',
     target => "/usr/share/nagios/html/",
+  }->
+
+  # regenerate nagios password file from scratch
+  exec { 'donagios-set-webadmin-password-cmd' :
+    path => '/bin:/usr/bin',
+    command => "htpasswd -bc /etc/nagios/htpasswd.users '${webadmin_user}' '${webadmin_password}'",
+    user => $user,
+    group => $group,
+  }
+  # and tell Nagios not to use its templated htpasswd
+  File <| title == 'nagios_htpasswd' |> {
+    noop => true,
   }
 
   # open up firewall port if we're not confining it to localhost
