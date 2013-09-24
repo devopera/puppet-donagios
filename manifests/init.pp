@@ -17,8 +17,10 @@ class donagios (
     parents => $parents,
   }->
 
-  nagios::service { 'donagios-target-checkdisks' :
+  nagios::service { "int:disks-donagios-${hostname}" :
     check_command => 'check_all_disks',
   }
 
+  # realise virtual (local) resources from other modules
+  Nagios::Service <||> { }
 }
