@@ -15,17 +15,54 @@ class donagios::server (
   $webadmin_user = 'admin',
   $webadmin_password = 'admLn**',
 
-  # flag to stop this run realising nagios services
-  $ignore_vnagios = false,
+  # flag to make this run realise nagios exported resources
+  $force_local = false,
 
   # refresh config each run
   $purge = true,
+
+  # firewall and monitor
+  $firewall = true,
+  $monitor = true,
 
   # end of class arguments
   # ----------------------
   # begin class
 
 ) {
+
+  # open up firewall port if we're not confining it to localhost and monitor
+  if (!$webadmin_limitlocalhost) {
+    if ($firewall) {
+      class { 'donagios::firewall' :
+        webadmin_port => $webadmin_port,
+      }
+    }
+    if ($monitor) {
+      class { 'donagios::monitor' :
+        webadmin_port => $webadmin_port,
+      }
+    }
+  }
+
+  # if we've got a message of the day, include
+  @domotd::register { "Nagios(${webadmin_port})" : }
+
+  # work out if we're staging out a new puppetmaster, or puppetting ourselves from a local one
+  # Note
+  # 1. can't use master_use_original because we might be doing a 1st run, where the 2nd run won't use_original
+  # 2. can't see if the puppetmaster_ipaddress from the hosts file is us, because it's never us
+  # 3. can test the current (not future or end-run state) puppet.conf file for a directive pointing to another puppetmaster
+
+  # if the puppetmaster server is explicitly set to point at our hostname/fqdn/ip
+  if (($puppetmaster_directive_name == $::hostname) or ($puppetmaster_directive_name == $::fqdn) or ($puppetmaster_directive_name == $::ipaddress)) {
+    $detect_local = true
+  } else {
+    $detect_local = false
+  }
+
+  # pull in commands for nagios plugins
+  class { 'donagios::server::commands' : }
 
   # use resource collector to hack nagios::headless->init->CentOS->base
   # don't notify apache
@@ -39,9 +76,14 @@ class donagios::server (
     group => $group,
   }
 
-  # test to see if this is a dummy run (creating a new puppetmaster)
-  if ($ignore_vnagios) {
+  # test to see if this is a 1st run (creating a new puppetmaster)
+  if ((!$detect_local) and (!$force_local)) {
+    # in this case we're creating a new puppetmaster, so we want to avoid
+    # pulling it its puppetDB stored_configs (exported resources)
+  
+    # never purge, because we're doing this from scratch
     $real_purge = false
+
     # create a single placeholder host/service (keep nagios happy)
     nagios_host { 'demo-placeholder-host' :
       host_name => 'localhost',
@@ -64,10 +106,17 @@ class donagios::server (
       noop => true,
     }
   } else {
+    # in this case we're puppeting from ourselves (local puppetmaster)
+    # that means there's no nagios::target include/profile, so we want
+    # to realise virtual (local) resources but not install local
+    class { 'donagios' :
+      force_local => true,
+    }
+
+    # only purge if we're set to purge
     $real_purge = $purge
   }
 
-  # disabling for now, because it shouldn't be necessary
   if ($real_purge) {
     # tell all virtual resource realisations to wait for this
     File <| title == 'nagios_confd' |> {
@@ -151,13 +200,6 @@ class donagios::server (
   # and tell Nagios not to use its templated htpasswd
   File <| title == 'nagios_htpasswd' |> {
     noop => true,
-  }
-
-  # open up firewall port if we're not confining it to localhost
-  if ( ! $webadmin_limitlocalhost ) {
-    class { 'donagios::firewall' :
-      webadmin_port => $webadmin_port,
-    }
   }
 
 }
