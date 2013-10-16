@@ -117,30 +117,28 @@ class donagios::server (
       realise_local => true,
     }
 
-    # tell all services to declare before we realise
-#    Nagios_service <||> {
-#      require => Class['nagios::base'],
-#    }
-
     # only purge if we're set to purge
     $real_purge = $purge
   }
 
   # if we're going to purge, make sure we do it before realising services 
   if ($real_purge) {
+    # experimenting without doing a purge at all
+    # after it introduced too many difficult cyclic dependencies
+
     # tell all virtual resource realisations to wait for this
-#    File <| title == 'nagios_confd' |> {
-#      require => [Exec['nagios-cleardown']]
-#    }
+    # File <| title == 'nagios_confd' |> {
+    #   require => [Exec['nagios-cleardown']]
+    # }
   
     # clear down previous nagios config if it exists
-#    exec { 'nagios-cleardown' :
-#      path => '/usr/bin:/bin',
-#      # problems regenerating command when refreshed
-#      # command => 'rm -rf /etc/nagios/conf.d/nagios_{command,host,service}.cfg',
-#      command => 'rm -rf /etc/nagios/conf.d/nagios_{host,service}.cfg',
-#      # before => Class['nagios::headless'],
-#    }
+    # exec { 'nagios-cleardown' :
+    #   path => '/usr/bin:/bin',
+      # problems regenerating command when refreshed
+      # command => 'rm -rf /etc/nagios/conf.d/nagios_{command,host,service}.cfg',
+    #   command => 'rm -rf /etc/nagios/conf.d/nagios_{host,service}.cfg',
+      # before => Class['nagios::headless'],
+    # }
   }
 
   # install nagios but don't ask it to install a webserver
