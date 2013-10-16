@@ -80,6 +80,7 @@ class donagios::server (
   if ((!$detect_local) and (!$force_local)) {
     # in this case we're creating a new puppetmaster, so we want to avoid
     # pulling it its puppetDB stored_configs (exported resources)
+    notify { "Creating a new puppetmaster (${::hostname}), probably spawned from ${::puppetmaster_ipaddress}": }
   
     # never purge, because we're doing this from scratch
     $real_purge = false
@@ -105,51 +106,47 @@ class donagios::server (
     Nagios_service <| tag != 'demo-placeholder' |> {
       noop => true,
     }
+    
   } else {
-    # in this case we're puppeting from ourselves (local puppetmaster)
+     # in this case we're puppeting from ourselves (local puppetmaster)
+    notify { "Self-puppetting from local puppetmaster (${::hostname}), puppet.conf server = ${::puppetmaster_directive_name}": }
+
     # that means there's no nagios::target include/profile, so we want
     # to realise virtual (local) resources but not install local
     class { 'donagios' :
-      force_local => true,
+      realise_local => true,
     }
+
+    # tell all services to declare before we realise
+#    Nagios_service <||> {
+#      require => Class['nagios::base'],
+#    }
 
     # only purge if we're set to purge
     $real_purge = $purge
   }
 
+  # if we're going to purge, make sure we do it before realising services 
   if ($real_purge) {
     # tell all virtual resource realisations to wait for this
-    File <| title == 'nagios_confd' |> {
-      require => [Exec['nagios-cleardown']]
-    }
+#    File <| title == 'nagios_confd' |> {
+#      require => [Exec['nagios-cleardown']]
+#    }
   
     # clear down previous nagios config if it exists
-    exec { 'nagios-cleardown' :
-      path => '/usr/bin:/bin',
-      # problems regenerating command when refreshed
-      # command => 'rm -rf /etc/nagios/conf.d/nagios_{command,host,service}.cfg',
-      command => 'rm -rf /etc/nagios/conf.d/nagios_{host,service}.cfg',
-      before => Class['nagios::headless'],
-    }
+#    exec { 'nagios-cleardown' :
+#      path => '/usr/bin:/bin',
+#      # problems regenerating command when refreshed
+#      # command => 'rm -rf /etc/nagios/conf.d/nagios_{command,host,service}.cfg',
+#      command => 'rm -rf /etc/nagios/conf.d/nagios_{host,service}.cfg',
+#      # before => Class['nagios::headless'],
+#    }
   }
 
   # install nagios but don't ask it to install a webserver
   class { 'nagios::headless' :
   }->
   class { 'nagios::defaults' :
-  }->
-
-  # create a host for localhost (server)
-  nagios_host { 'donagios-localhost' :
-    host_name => $fqdn,
-    alias => $hostname,
-    address => '127.0.0.1',
-    use => 'generic-host',
-  }->
-  
-  # setup services for localhost
-  nagios::service { 'donagios-localhost-checkdisks' :
-    check_command => 'check_all_disks',
   }->
 
   # clean up dir with wrong permissions

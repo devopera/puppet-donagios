@@ -7,8 +7,8 @@ class donagios (
   # by default, this target's parent is the puppetmaster
   $parents = $puppetmaster_ipaddress,
 
-  # but by forcing local (local puppetmaster) we can avoid reinstalling nagios
-  $force_local = false,
+  # by default, realise all local services (send to puppetmaster)
+  $realise_local = true,
 
   # by default, monitor machine basics
   $test_load = true,
@@ -20,10 +20,16 @@ class donagios (
 
 ) {
 
-  if (!$force_local) {
-    class { 'nagios::target' :
-      parents => $parents,
-    }
+  # this file is included in donagios::server (for local puppetmasters)
+  
+  # always setup client
+  class { 'nagios::target' :
+    parents => $parents,
+  }
+
+  if ($realise_local) {
+    # realise virtual (local) resources from other modules
+    Nagios::Service <||> { }
   }
 
   if ($test_disk) {
@@ -45,6 +51,4 @@ class donagios (
     }
   }
 
-  # realise virtual (local) resources from other modules
-  Nagios::Service <||> { }
 }
