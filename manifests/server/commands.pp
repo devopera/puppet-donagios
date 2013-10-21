@@ -14,9 +14,9 @@ class donagios::server::commands (
   nagios_command { 'check_procs' :
     # -w warning RANGE
     # -c critical RANGE
-    # -C command
+    # -a string to scan command arguments for
     # ranges are min:[max]
-    command_line => '$USER1$/check_procs -w $ARG1$ -c $ARG2$ -C $ARG3$'
+    command_line => '$USER1$/check_procs -w $ARG1$ -c $ARG2$ -a $ARG3$'
   }
 
   # check samba port
