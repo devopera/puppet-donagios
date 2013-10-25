@@ -27,12 +27,20 @@ class donagios::server::commands (
     # -a IP address
     # -u username
     # -p password
-    command_line => '$USER1$/check_disk_smb -H $ARG1$ -s $ARG2$ -W $ARG3$ -a $ARG4$ -u $ARG5$ -p $ARG6$'
+    command_line => '$USER1$/check_disk_smb -H $ARG1$ -s $ARG2$ -W $ARG3$ -a $ARG4$ -u $ARG5$ -p $ARG6$',
   }
   
   # check https while ignoring cert issues
   nagios_command { 'check_https_nocert' :
-    command_line => '$USER1$/check_http --ssl -H $HOSTADDRESS$ -I $HOSTADDRESS$ -C 0'
+    command_line => '$USER1$/check_http --ssl -H $HOSTADDRESS$ -I $HOSTADDRESS$ -C 0',
+  }
+
+  # check http with basic authentication
+  nagios_command { 'check_http_auth' :
+    # -u URL path
+    # -p port number
+    # -a username:password
+    command_line => '$USER1$/check_http -H $HOSTADDRESS$ -I $HOSTADDRESS$ -u $ARG1$ -p $ARG2$ -a $ARG3$',
   }
 
 }

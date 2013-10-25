@@ -41,6 +41,8 @@ class donagios::server (
     if ($monitor) {
       class { 'donagios::monitor' :
         webadmin_port => $webadmin_port,
+        webadmin_user => $webadmin_user,
+        webadmin_password => $webadmin_password,
       }
     }
   }
@@ -64,6 +66,11 @@ class donagios::server (
   # pull in commands for nagios plugins
   class { 'donagios::server::commands' : }
 
+  # we are a puppetmaster so there's no nagios::target include/profile, so we want to realise virtual (local) resources (for export), but not realise exported resources locally (for local new puppetmaster)
+  class { 'donagios' :
+    realise_local => true,
+  }
+
   # use resource collector to hack nagios::headless->init->CentOS->base
   # don't notify apache
   File <| title == 'nagios_cgi_cfg' |> {
@@ -85,36 +92,42 @@ class donagios::server (
     # never purge, because we're doing this from scratch
     $real_purge = false
 
-    # create a single placeholder host/service (keep nagios happy)
+    # create a single placeholder host/service locally (to keep nagios happy)
     nagios_host { 'demo-placeholder-host' :
       host_name => 'localhost',
       address => '127.0.0.1',
       use => 'generic-host',
-      tag => 'demo-placeholder',
     }
     nagios_service { 'demo-placeholder-service' :
       host_name => 'localhost',
       service_description => 'demo-service',
       check_command => 'check_all_disks',
       use => 'generic-service',
-      tag => 'demo-placeholder',
     }
+
+    # now realise all virtual resources, but do not collect exported (because they weren't exported to us)
     # tell all the other hosts/services not to be created
-    Nagios_host <| tag != 'demo-placeholder' |> {
+    Nagios_host <| |> {
       noop => true,
     }
-    Nagios_service <| tag != 'demo-placeholder' |> {
+    Nagios_service <| |> {
       noop => true,
+    }
+    Nagios_host <| title == $::fqdn |> {
+      noop => false,
+    }
+    Nagios_service <| host_name == $::fqdn |> {
+      noop => false,
     }
     
   } else {
      # in this case we're puppeting from ourselves (local puppetmaster)
     notify { "Self-puppetting from local puppetmaster (${::hostname}), puppet.conf server = ${::puppetmaster_directive_name}": }
 
-    # that means there's no nagios::target include/profile, so we want
-    # to realise virtual (local) resources but not install local
-    class { 'donagios' :
-      realise_local => true,
+    # remove localhost entry because we should have exported/be exporting a resource for this machine
+    nagios_host { 'demo-placeholder-host' :
+      host_name => 'localhost',
+      ensure => 'absent'
     }
 
     # only purge if we're set to purge
