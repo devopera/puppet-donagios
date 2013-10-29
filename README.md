@@ -18,3 +18,21 @@ Changelog
 
   * Moved across to docommon::fireport alias for opening firewall ports
 
+Usage
+-----
+
+Create a target (a machine that should be monitored)
+```
+class { 'donagios' : }
+```
+
+Create a server (must not also be a target)
+```
+class { 'donagios::server' : }
+```
+
+Force nagios to refresh config on server each time
+```
+class { 'donagios::server::pre' : }->
+class { 'donagios::server' : }
+```
