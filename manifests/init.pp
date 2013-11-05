@@ -34,7 +34,7 @@ class donagios (
 
   if ($test_disk) {
     # monitor disk free space
-    @nagios::service { "int:disk_root-donagios-${hostname}" :
+    @nagios::service { "int:disk_root-donagios-${::fqdn}" :
       # issue WARNING if free space less than 20%
       # issue CRITICAL if free space less than 10%
       check_command => 'check_disk!20%!10%!/',
@@ -43,7 +43,7 @@ class donagios (
 
   if ($test_load) {
     # monitor mean processor load
-    @nagios::service { "int:load-donagios-${hostname}":
+    @nagios::service { "int:load-donagios-${::fqdn}":
       # issue WARNING if average load over 15-10-5
       # issue CRITICAL if average load over 30-25-20
       # average loads measured over 1, 5, 15 minutes
