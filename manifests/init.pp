@@ -22,9 +22,10 @@ class donagios (
 
   # this file is included in donagios::server (for local puppetmasters)
   
-  # always setup client
+  # always setup client, but don't rely on unique ${::hostname} for alias
   class { 'nagios::target' :
     parents => $parents,
+    nagios_alias => $::fqdn,
   }
 
   if ($realise_local) {
