@@ -9,7 +9,7 @@ class donagios (
 
   # by default, realise all local services (send to puppetmaster)
   $realise_local = true,
-
+  
   # by default, monitor machine basics
   $test_load = true,
   $test_disk = true,

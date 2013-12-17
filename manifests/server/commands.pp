@@ -10,13 +10,14 @@ class donagios::server::commands (
 
 ) {
 
-  # setup nagios commands for default (installed) nagios plugins
+  # setup nagios commands for installed nagios plugins
   nagios_command { 'check_procs' :
+    # -H machine IP to check on
     # -w warning RANGE
     # -c critical RANGE
     # -a string to scan command arguments for
     # ranges are min:[max]
-    command_line => '$USER1$/check_procs -w $ARG1$ -c $ARG2$ -a $ARG3$'
+    command_line => '$USER1$/check_nrpe -H $HOSTADDRESS$ -c check_procs -a $ARG1$ $ARG2$ $ARG3$'
   }
 
   # check samba port
