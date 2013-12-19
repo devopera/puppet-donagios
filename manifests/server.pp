@@ -25,6 +25,9 @@ class donagios::server (
   $firewall = true,
   $monitor = true,
 
+  # configured to use either duritong or example42
+  $nagios_provider = 'duritong',
+
   # end of class arguments
   # ----------------------
   # begin class
@@ -63,25 +66,32 @@ class donagios::server (
     $detect_local = false
   }
 
-  # pull in commands for nagios plugins
-  class { 'donagios::server::commands' : }
-
   # we are a puppetmaster so there's no nagios::target include/profile, so we want to realise virtual (local) resources (for export), but not realise exported resources locally (for local new puppetmaster)
   class { 'donagios' :
     realise_local => true,
   }
 
-  # use resource collector to hack nagios::headless->init->CentOS->base
-  # don't notify apache
-  File <| title == 'nagios_cgi_cfg' |> {
-    notify => undef,
+  # pull in commands for nagios plugins
+  class { 'donagios::server::commands' : }
+
+  case $nagios_provider {
+    'duritong' : {
+      # use resource collector to hack nagios::headless->init->CentOS->base
+      # don't notify apache
+      File <| title == 'nagios_cgi_cfg' |> {
+        notify => undef,
+      }
+      # all nagios resources should be web:nagios
+      # no wildcards/regex in resource collectors, so duplication
+      File <| title == 'nagios_main_cfg' or title == 'nagios_cgi_cfg' or title == 'nagios_htpasswd' or title == 'nagios_private' or title == 'nagios_private_resource_cfg' or title == 'nagios_confd' |> {
+        owner => $user,
+        group => $group,
+      }
+    }
+    'example42' : {
+    }
   }
-  # all nagios resources should be web:nagios
-  # no wildcards/regex in resource collectors, so duplication
-  File <| title == 'nagios_main_cfg' or title == 'nagios_cgi_cfg' or title == 'nagios_htpasswd' or title == 'nagios_private' or title == 'nagios_private_resource_cfg' or title == 'nagios_confd' |> {
-    owner => $user,
-    group => $group,
-  }
+     
 
   # test to see if this is a 1st run (creating a new puppetmaster)
   if ((!$detect_local) and (!$force_local)) {
@@ -134,31 +144,22 @@ class donagios::server (
     $real_purge = $purge
   }
 
-  # if we're going to purge, make sure we do it before realising services 
-  if ($real_purge) {
-    # experimenting without doing a purge at all
-    # after it introduced too many difficult cyclic dependencies
-
-    # tell all virtual resource realisations to wait for this
-    # File <| title == 'nagios_confd' |> {
-    #   require => [Exec['nagios-cleardown']]
-    # }
-  
-    # clear down previous nagios config if it exists
-    # exec { 'nagios-cleardown' :
-    #   path => '/usr/bin:/bin',
-      # problems regenerating command when refreshed
-      # command => 'rm -rf /etc/nagios/conf.d/nagios_{command,host,service}.cfg',
-    #   command => 'rm -rf /etc/nagios/conf.d/nagios_{host,service}.cfg',
-      # before => Class['nagios::headless'],
-    # }
+  case $nagios_provider {
+    'duritong' : {
+      # install nagios but don't ask it to install a webserver
+      class { 'nagios::headless' :
+      }->
+      class { 'nagios::defaults' :
+        before => Exec['donagios-permission-cleanup-cmd'],
+      }
+    }
+    'example42' : {
+      class { 'nagios' :
+        install_prerequisites => false,
+        before => Exec['donagios-permission-cleanup-cmd'],
+      }
+    }
   }
-
-  # install nagios but don't ask it to install a webserver
-  class { 'nagios::headless' :
-  }->
-  class { 'nagios::defaults' :
-  }->
 
   # clean up dir with wrong permissions
   exec { 'donagios-permission-cleanup-cmd' :

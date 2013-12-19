@@ -14,6 +14,9 @@ class donagios (
   $test_load = true,
   $test_disk = true,
 
+  # configured to use either duritong or example42
+  $nagios_provider = 'duritong',
+
   # end of class arguments
   # ----------------------
   # begin class
@@ -23,10 +26,18 @@ class donagios (
   # this file is included in donagios::server (for local puppetmasters)
   
   # always setup client, but don't rely on unique ${::hostname} for alias
-  class { 'nagios::target' :
-    parents => $parents,
-    nagios_alias => $::fqdn,
+  case $nagios_provider {
+    'duritong' : {
+      class { 'nagios::target' :
+        parents => $parents,
+        nagios_alias => $::fqdn,
+      }
+    }
+    'example42' : {
+      class { 'nagios::target' : }
+    }
   }
+
 
   if ($realise_local) {
     # realise virtual (local) resources from other modules
