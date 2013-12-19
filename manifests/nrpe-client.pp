@@ -4,13 +4,25 @@ class donagios::nrpe-client (
   # ---------------
   # setup defaults
 
+  # configured to use either duritong or example42
+  $nagios_provider = 'duritong',
+
   # end of class arguments
   # ----------------------
   # begin class
 
 ) {
 
-  # install nrpe
-  class { 'nrpe' : }
+  case $nagios_provider {
+    'duritong' : {
+      # install nrpe
+      # doesn't work
+      # class { 'nagios::nrpe' : }
+    }
+    'example42' : {
+      # install nrpe
+      class { 'nrpe' : }
+    }
+  }
 
 }
