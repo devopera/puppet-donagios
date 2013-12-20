@@ -26,7 +26,7 @@ class donagios::server (
   $monitor = true,
 
   # configured to use either duritong or example42
-  $nagios_provider = 'duritong',
+  $provider = 'duritong',
 
   # end of class arguments
   # ----------------------
@@ -74,7 +74,7 @@ class donagios::server (
   # pull in commands for nagios plugins
   class { 'donagios::server::commands' : }
 
-  case $nagios_provider {
+  case $provider {
     'duritong' : {
       # use resource collector to hack nagios::headless->init->CentOS->base
       # don't notify apache
@@ -144,7 +144,7 @@ class donagios::server (
     $real_purge = $purge
   }
 
-  case $nagios_provider {
+  case $provider {
     'duritong' : {
       # install nagios but don't ask it to install a webserver
       class { 'nagios::headless' :

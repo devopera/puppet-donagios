@@ -15,7 +15,7 @@ class donagios (
   $test_disk = true,
 
   # configured to use either duritong or example42
-  $nagios_provider = 'duritong',
+  $provider = 'duritong',
 
   # end of class arguments
   # ----------------------
@@ -26,7 +26,7 @@ class donagios (
   # this file is included in donagios::server (for local puppetmasters)
   
   # always setup client, but don't rely on unique ${::hostname} for alias
-  case $nagios_provider {
+  case $provider {
     'duritong' : {
       class { 'nagios::target' :
         parents => $parents,
