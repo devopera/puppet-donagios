@@ -11,13 +11,30 @@ class donagios::server::commands (
 ) {
 
   # setup nagios commands for installed nagios plugins
-  nagios_command { 'check_procs' :
-    # -H machine IP to check on
-    # -w warning RANGE
-    # -c critical RANGE
-    # -a string to scan command arguments for
-    # ranges are min:[max]
-    command_line => '$USER1$/check_nrpe -H $HOSTADDRESS$ -c check_procs -a $ARG1$ $ARG2$ $ARG3$'
+  # see nrpe-client.pp for client-side setup of NRPE-accessible commands
+  
+  # use nrpe to check X process is running
+  nagios_command { 'check_nrpe_procs_smbd' :
+    command_line => '$USER1$/check_nrpe -H $HOSTADDRESS$ -p 15666 -c check_nrpe_procs_smbd'
+  }
+  nagios_command { 'check_nrpe_procs_postfix' :
+    command_line => '$USER1$/check_nrpe -H $HOSTADDRESS$ -p 15666 -c check_nrpe_procs_postfix'
+  }
+  nagios_command { 'check_nrpe_procs_puppetmaster' :
+    command_line => '$USER1$/check_nrpe -H $HOSTADDRESS$ -p 15666 -c check_nrpe_procs_puppetmaster'
+  }
+  nagios_command { 'check_nrpe_procs_puppetdb' :
+    command_line => '$USER1$/check_nrpe -H $HOSTADDRESS$ -p 15666 -c check_nrpe_procs_puppetdb'
+  }
+  
+  # use nrpe to check disk has enough free space
+  nagios_command { 'check_nrpe_disk' :
+    command_line => '$USER1$/check_nrpe -H $HOSTADDRESS$ -p 15666 -c check_nrpe_disk'
+  }
+
+  # use nrpe to check process load
+  nagios_command { 'check_nrpe_load' :
+    command_line => '$USER1$/check_nrpe -H $HOSTADDRESS$ -p 15666 -c check_nrpe_load'
   }
 
   # check samba port

@@ -15,23 +15,20 @@ class donagios::nrpe-client (
   
   # use override to make command list more restricted/secure
   $command_list = [
-    'command[check_mount]=<%= scope.lookupvar(\'nrpe::pluginsdir\') %>/check_mount -m "$ARG1$" -t "$ARG2$"',
-    'command[check_process]=<%= scope.lookupvar(\'nrpe::pluginsdir\') %>/check_procs -c 1: -C "$ARG1$"',
-    'command[check_processwitharg]=<%= scope.lookupvar(\'nrpe::pluginsdir\') %>/check_procs -c 1: -C "$ARG1$" -a "$ARG2$"',
-    'command[check_port_tcp]=<%= scope.lookupvar(\'nrpe::pluginsdir\') %>/check_tcp -H "$ARG1$" -p "$ARG2$"',
-    'command[check_port_udp]=<%= scope.lookupvar(\'nrpe::pluginsdir\') %>/check_udp -H "$ARG1$" -p "$ARG2$"',
-    'command[check_url]=<%= scope.lookupvar(\'nrpe::pluginsdir\') %>/check_http -I "$ARG1$" -p "$ARG2$" -u "$ARG3$" -r "$ARG4$" -A "$ARG5$" -H "$ARG6$"',
-    'command[check_url_auth]=<%= scope.lookupvar(\'nrpe::pluginsdir\') %>/check_http -I "$ARG1$" -p "$ARG2$" -u "$ARG3$" -r "$ARG4$" -a "$ARG5$" -A "$ARG6$" -H "$ARG7"',
-    'command[check_swap]=<%= scope.lookupvar(\'nrpe::pluginsdir\') %>/check_swap -w 40% -c 20%',
-    'command[check_mailq]=<%= scope.lookupvar(\'nrpe::pluginsdir\') %>/check_mailq -w 1 -c 5',
-    'command[check_all_disks_param]=<%= scope.lookupvar(\'nrpe::pluginsdir\') %>/check_disk -w <%= scope.lookupvar(\'nrpe::checkdisk_warning\') %> -c <%= scope.lookupvar(\'nrpe::checkdisk_critical\') %> -L -X tmpfs',
-    'command[check_users]=<%= scope.lookupvar(\'nrpe::pluginsdir\') %>/check_users -w 5 -c 10',
-    'command[check_load]=<%= scope.lookupvar(\'nrpe::pluginsdir\') %>/check_load -w 15,10,5 -c 30,25,20',
-    'command[check_zombie_procs]=<%= scope.lookupvar(\'nrpe::pluginsdir\') %>/check_procs -w 5 -c 10 -s Z',
-    'command[check_ageandcontent]=<%= scope.lookupvar(\'nrpe::pluginsdir\') %>/check_ageandcontent.pl -f "$ARG1$" -i "$ARG2$" -n "$ARG3$" -m "$ARG4$"',
-    'command[check_total_procs]=<%= scope.lookupvar(\'nrpe::pluginsdir\') %>/check_procs -w 150 -c 200', 
-    'command[check_ntp]=<%= scope.lookupvar(\'nrpe::pluginsdir\') %>/check_ntp -H <%= scope.lookupvar(\'nrpe::ntp\') %>',
+    'command[check_nrpe_procs_smbd]=<%= scope.lookupvar(\'nrpe::pluginsdir\') %>/check_procs -w 1: -c 1: -a smbd',
+    'command[check_nrpe_procs_puppetmaster]=<%= scope.lookupvar(\'nrpe::pluginsdir\') %>/check_procs -w 1: -c 1: -a \'puppet master\'',
+    'command[check_nrpe_procs_puppetdb]=<%= scope.lookupvar(\'nrpe::pluginsdir\') %>/check_procs -w 1: -c 1: -a puppetdb',
+    'command[check_nrpe_procs_postfix]=<%= scope.lookupvar(\'nrpe::pluginsdir\') %>/check_procs -w 1: -c 1: -a postfix',
+    # issue WARNING if free space less than 20%
+    # issue CRITICAL if free space less than 10%
+    'command[check_nrpe_disk]=<%= scope.lookupvar(\'nrpe::pluginsdir\') %>/check_disk -w 20% -c 10% -p /tmp -p /var -p /',
+    # issue WARNING if average load over 15-10-5
+    # issue CRITICAL if average load over 30-25-20
+    # average loads measured over 1, 5, 15 minutes
+    'command[check_nrpe_load]=<%= scope.lookupvar(\'nrpe::pluginsdir\') %>/check_load -w 15,10,5 -c 30,25,20',
   ],
+  $command_list_extras = [],
+  $notifier_dir = '/etc/puppet/tmp',
 
   # end of class arguments
   # ----------------------
@@ -51,11 +48,23 @@ class donagios::nrpe-client (
         port => $port,
         allowed_hosts => $allowed_hosts,
         template => $template,
+        # secure nrpe by not allowing arguments
+        dont_blame_nrpe => 0,
       }
       # open firewall port
       @docommon::fireport { "donagios-nrpe-client-${port}" :
         port => $port,
         protocol => 'tcp',
+      }
+      # tell SELinux to allow NRPE traffic on port
+      if (str2bool($::selinux)) {
+        if ($ssh_port != 5666) {
+          exec { 'nrpe-client-selinux-open-port' :
+            path => '/bin:/sbin:/usr/bin:/usr/sbin',
+            command => "semanage port -a -t inetd_child_port_t -p tcp ${port} && touch ${notifier_dir}/puppet-nrpe-client-selinux-fix",
+            creates => "${notifier_dir}/puppet-nrpe-client-selinux-fix",
+          }
+        }
       }
     }
   }

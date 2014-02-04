@@ -27,3 +27,6 @@ include_dir=<%= scope.lookupvar('nrpe::config_dir') %>/
 <% @command_list.each do |command| -%>
 <%= scope.function_inline_template([command]) %>
 <% end -%>
+<% @command_list_extras.each do |command| -%>
+<%= scope.function_inline_template([command]) %>
+<% end -%>

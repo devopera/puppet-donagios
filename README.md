@@ -6,6 +6,10 @@ Devopera module for managing hosted nagios config
 Changelog
 ---------
 
+2014-02-04
+
+  * NRPE-based client service, load and disk checking, without command arguments for security
+
 2013-10-11
 
   * Formalised monitoring and setup virtual resources to monitor nagios itself
