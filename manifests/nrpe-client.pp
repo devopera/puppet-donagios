@@ -36,6 +36,17 @@ class donagios::nrpe-client (
 
 ) {
 
+  # set package name
+  $packagename = $::operatingsystem ? {
+    /(?i:Debian|Ubuntu|Mint)/   => 'nagios-nrpe-server',
+    /(?i:SLES|OpenSuSE)/        => $::operatingsystemrelease ? {
+      '12.3'   => 'nrpe',
+      default  => 'nagios-nrpe',
+    },
+    /(?i:CentOS|Redhat|Fedora)/ => 'nrpe',
+    default                     => 'nrpe',
+  }
+
   case $provider {
     'duritong' : {
       # install nrpe
@@ -48,6 +59,7 @@ class donagios::nrpe-client (
         port => $port,
         allowed_hosts => $allowed_hosts,
         template => $template,
+        package => $packagename,
         # secure nrpe by not allowing arguments
         dont_blame_nrpe => 0,
       }
@@ -63,6 +75,7 @@ class donagios::nrpe-client (
             path => '/bin:/sbin:/usr/bin:/usr/sbin',
             command => "semanage port -a -t inetd_child_port_t -p tcp ${port} && touch ${notifier_dir}/puppet-nrpe-client-selinux-fix",
             creates => "${notifier_dir}/puppet-nrpe-client-selinux-fix",
+            require => [File["${notifier_dir}"]],
           }
         }
       }
