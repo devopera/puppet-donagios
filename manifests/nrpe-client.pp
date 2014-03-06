@@ -28,6 +28,13 @@ class donagios::nrpe-client (
     'command[check_nrpe_load]=<%= scope.lookupvar(\'nrpe::pluginsdir\') %>/check_load -w 15,10,5 -c 30,25,20',
   ],
   $command_list_extras = [],
+  
+  # check_nrpe runs commands as nrpe escalated from nagios
+  $user_name_nrpe = 'nrpe',
+  $user_name_nagios = 'nagios',
+  # web server group name
+  $group_name = 'www-data',
+  
   $notifier_dir = '/etc/puppet/tmp',
 
   # end of class arguments
@@ -67,6 +74,15 @@ class donagios::nrpe-client (
       @docommon::fireport { "donagios-nrpe-client-${port}" :
         port => $port,
         protocol => 'tcp',
+      }
+      # if there's a www-data group
+      if defined('dozendserver') {
+        # give nrpe access to read files like apache/zend
+        exec { 'donagios-nrpe-user-group-add' :
+          path => '/usr/bin:/usr/sbin',
+          command => "gpasswd --add ${user_name_nagios} ${group_name}; gpasswd --add ${user_name_nrpe} ${group_name}",
+          require => [Class['nrpe'], Class['dozendserver']],
+        }
       }
       # tell SELinux to allow NRPE traffic on port
       if (str2bool($::selinux)) {

@@ -6,6 +6,10 @@ Devopera module for managing hosted nagios config
 Changelog
 ---------
 
+2014-03-06
+
+  * Added nrpe/nagios users to www-data group to allow monitoring of file timestamps, e.g. database backups
+
 2014-02-04
 
   * NRPE-based client service, load and disk checking, without command arguments for security
