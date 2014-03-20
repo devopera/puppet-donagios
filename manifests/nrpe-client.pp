@@ -30,7 +30,7 @@ class donagios::nrpe-client (
   $command_list_extras = [],
   
   # check_nrpe runs commands as nrpe escalated from nagios
-  $user_name_nrpe = 'nrpe',
+  $user_name_nrpe = $donagios::params::user_name_nrpe,
   $user_name_nagios = 'nagios',
   # web server group name
   $group_name = 'www-data',
@@ -41,7 +41,7 @@ class donagios::nrpe-client (
   # ----------------------
   # begin class
 
-) {
+) inherits donagios::params {
 
   # set package name
   $packagename = $::operatingsystem ? {
@@ -78,10 +78,17 @@ class donagios::nrpe-client (
       # if there's a www-data group
       if defined('dozendserver') {
         # give nrpe access to read files like apache/zend
-        exec { 'donagios-nrpe-user-group-add' :
+        exec { 'donagios-nagios-user-group-add' :
           path => '/usr/bin:/usr/sbin',
-          command => "gpasswd --add ${user_name_nagios} ${group_name}; gpasswd --add ${user_name_nrpe} ${group_name}",
+          command => "gpasswd --add ${user_name_nagios} ${group_name}",
           require => [Class['nrpe'], Class['dozendserver']],
+        }
+        if ($user_name_nrpe != user_name_nagios) {
+          exec { 'donagios-nrpe-user-group-add' :
+            path => '/usr/bin:/usr/sbin',
+            command => "gpasswd --add ${user_name_nrpe} ${group_name}",
+            require => [Class['nrpe'], Class['dozendserver']],
+          }
         }
       }
       # tell SELinux to allow NRPE traffic on port
