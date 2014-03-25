@@ -69,12 +69,25 @@ class donagios::nrpe-client (
         package => $packagename,
         # secure nrpe by not allowing arguments
         dont_blame_nrpe => 0,
+        before => [Anchor['donagios-nrpe-client-ready']],
       }
+
+      anchor { 'donagios-nrpe-client-ready' : }
+
       # open firewall port
       @docommon::fireport { "donagios-nrpe-client-${port}" :
         port => $port,
         protocol => 'tcp',
       }
+
+      # manually restart the service silently as a hack to fix dead pid
+      if (true) {
+        docommon::restartsilent { 'donagios-nrpe-hack-fix-restart' :
+          service => $::nrpe::params::service,
+          require => [Class['nrpe'], Anchor['donagios-nrpe-client-ready']],
+        }
+      }
+
       # if there's a www-data group
       if defined('dozendserver') {
         # give nrpe access to read files like apache/zend
@@ -82,12 +95,14 @@ class donagios::nrpe-client (
           path => '/usr/bin:/usr/sbin',
           command => "gpasswd --add ${user_name_nagios} ${group_name}",
           require => [Class['nrpe'], Class['dozendserver']],
+          before => [Anchor['donagios-nrpe-client-ready']],
         }
         if ($user_name_nrpe != user_name_nagios) {
           exec { 'donagios-nrpe-user-group-add' :
             path => '/usr/bin:/usr/sbin',
             command => "gpasswd --add ${user_name_nrpe} ${group_name}",
             require => [Class['nrpe'], Class['dozendserver']],
+            before => [Anchor['donagios-nrpe-client-ready']],
           }
         }
       }
@@ -99,6 +114,7 @@ class donagios::nrpe-client (
             command => "semanage port -a -t inetd_child_port_t -p tcp ${port} && touch ${notifier_dir}/puppet-nrpe-client-selinux-fix",
             creates => "${notifier_dir}/puppet-nrpe-client-selinux-fix",
             require => [File["${notifier_dir}"]],
+            before => [Anchor['donagios-nrpe-client-ready']],
           }
         }
       }
