@@ -19,7 +19,7 @@ class donagios::monitor (
       check_command => "check_http_auth!/!${webadmin_port}!${webadmin_user}:${webadmin_password}",
     }
     @nagios::service { "int:process_nagios-donagios-${::fqdn}":
-      check_command => "check_procs!1:!1:!nagios",
+      check_command => "check_local_procs!1:!1:!nagios",
     }
   }
 

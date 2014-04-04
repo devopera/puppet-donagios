@@ -11,6 +11,8 @@ class donagios::server::commands (
 ) {
 
   # setup nagios commands for installed nagios plugins
+
+  # REMOTE
   # see nrpe-client.pp for client-side setup of NRPE-accessible commands
   
   # use nrpe to check X process is running
@@ -35,6 +37,17 @@ class donagios::server::commands (
   # use nrpe to check process load
   nagios_command { 'check_nrpe_load' :
     command_line => '$USER1$/check_nrpe -H $HOSTADDRESS$ -p 15666 -c check_nrpe_load'
+  }
+
+  # LOCAL
+  # executed on the nagios server (typically the puppetmaster)
+
+  # check local service
+  nagios_command { 'check_local_procs' :
+    # -w warning level
+    # -c critical level
+    # -a command arguments (for process matching)
+    command_line => '$USER1$/check_procs -w $ARG1$ -c $ARG2$ -a $ARG3$',
   }
 
   # check samba port

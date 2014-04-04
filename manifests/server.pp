@@ -66,6 +66,10 @@ class donagios::server (
     $detect_local = false
   }
 
+  # could setup our own config file
+  File <| title == 'nagios_main_cfg' |> {
+  }
+
   # we are a puppetmaster so there's no nagios::target include/profile, so we want to realise virtual (local) resources (for export), but not realise exported resources locally (for local new puppetmaster)
   class { 'donagios' :
     realise_local => true,
@@ -210,5 +214,18 @@ class donagios::server (
   File <| title == 'nagios_htpasswd' |> {
     noop => true,
   }
+
+  if (str2bool($::selinux)) {
+    # tweak the context of check_disk_smb to allow nagios to access it
+    docommon::setcontext { 'donagios-server-selinux-tweak-checksmb' :
+      filename => $::hardwaremodel ? {
+        'x86_64' => '/usr/lib64/nagios/plugins/check_disk_smb',
+        default => '/usr/lib/nagios/plugins/check_disk_smb',
+      },
+      # from nagios_checkdisk_plugin_exec_t -> nagios_services_plugin_exec_t
+      context => 'nagios_services_plugin_exec_t',
+      notify => [Service['nagios']],
+    }
+  }  
 
 }
