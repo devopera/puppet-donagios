@@ -28,6 +28,9 @@ class donagios::server::commands (
   nagios_command { 'check_nrpe_procs_puppetdb' :
     command_line => '$USER1$/check_nrpe -H $HOSTADDRESS$ -p 15666 -c check_nrpe_procs_puppetdb'
   }
+  nagios_command { 'check_nrpe_procs_node' :
+    command_line => '$USER1$/check_nrpe -H $HOSTADDRESS$ -p 15666 -c check_nrpe_procs_node'
+  }
   
   # use nrpe to check disk has enough free space
   nagios_command { 'check_nrpe_disk' :

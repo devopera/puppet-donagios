@@ -19,6 +19,8 @@ class donagios::nrpe-client (
     'command[check_nrpe_procs_puppetmaster]=<%= scope.lookupvar(\'nrpe::pluginsdir\') %>/check_procs -w 1: -c 1: -a \'puppet master\'',
     'command[check_nrpe_procs_puppetdb]=<%= scope.lookupvar(\'nrpe::pluginsdir\') %>/check_procs -w 1: -c 1: -a puppetdb',
     'command[check_nrpe_procs_postfix]=<%= scope.lookupvar(\'nrpe::pluginsdir\') %>/check_procs -w 1: -c 1: -a postfix',
+    # use full path to node executable so as not to match Zend's MonitorNode
+    'command[check_nrpe_procs_node]=<%= scope.lookupvar(\'nrpe::pluginsdir\') %>/check_procs -w 1: -c 1: -a /usr/bin/node',
     # issue WARNING if free space less than 20%
     # issue CRITICAL if free space less than 10%
     'command[check_nrpe_disk]=<%= scope.lookupvar(\'nrpe::pluginsdir\') %>/check_disk -w 20% -c 10% -p /tmp -p /var -p /',
@@ -109,11 +111,16 @@ class donagios::nrpe-client (
       # tell SELinux to allow NRPE traffic on port
       if (str2bool($::selinux)) {
         if ($ssh_port != 5666) {
-          exec { 'nrpe-client-selinux-open-port' :
-            path => '/bin:/sbin:/usr/bin:/usr/sbin',
-            command => "semanage port -a -t inetd_child_port_t -p tcp ${port} && touch ${notifier_dir}/puppet-nrpe-client-selinux-fix",
-            creates => "${notifier_dir}/puppet-nrpe-client-selinux-fix",
-            require => [File["${notifier_dir}"]],
+          # exec { 'nrpe-client-selinux-open-port' :
+          #   path => '/bin:/sbin:/usr/bin:/usr/sbin',
+          #   command => "semanage port -a -t inetd_child_port_t -p tcp ${port} && touch ${notifier_dir}/puppet-nrpe-client-selinux-fix",
+          #   creates => "${notifier_dir}/puppet-nrpe-client-selinux-fix",
+          #   require => [File["${notifier_dir}"]],
+          #   before => [Anchor['donagios-nrpe-client-ready']],
+          # }
+          docommon::seport { "tcp/${port}":
+            port => $port,
+            seltype => 'inetd_child_port_t',
             before => [Anchor['donagios-nrpe-client-ready']],
           }
         }
