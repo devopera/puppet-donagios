@@ -1,7 +1,7 @@
-puppet-donagios
+[devopera](http://devopera.com)-[donagios](http://devopera.com/module/donagios)
 ===============
 
-Devopera module for managing hosted nagios config
+Devopera module for managing hosted nagios config.  You can [download a virtual machine](http://devopera.com/applications/nagios-and-puppetmaster-puppetdb) that demonstrates the use of this module.
 
 Changelog
 ---------
@@ -29,6 +29,8 @@ Changelog
 Usage
 -----
 
+This module also requires either [Example42's nagios](https://github.com/example42/puppet-nagios) or [Duritong's nagios](https://github.com/duritong/puppet-nagios) module, though the latter isn't available on Puppet Forge.
+
 Create a target (a machine that should be monitored)
 
     class { 'donagios' : }
@@ -41,6 +43,11 @@ Force nagios to refresh config on server each time
 
     class { 'donagios::server::pre' : }->
     class { 'donagios::server' : }
+
+Operating System support
+------------------------
+
+Tested with CentOS 6
 
 Copyright and License
 ---------------------

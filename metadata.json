@@ -1,14 +1,15 @@
 {
   "name": "devopera-donagios",
-  "version": "0.9.0",
+  "version": "0.9.1",
   "author": "(c) Alex Stanhope, Devopera.com",
   "summary": "Nagios installation and configuration module",
   "license": "Apache License, Version 2.0",
   "source": "https://github.com/devopera/puppet-donagios",
-  "description": "",
+  "description": "Devopera module for managing hosted nagios config",
   "issues_url": "https://github.com/devopera/puppet-donagios/issues",
   "project_page": "http://devopera.com/module/donagios",
   "dependencies": [
-  
+    {"name":"devopera/docommon","version_requirement":"0.9.3"},
+    {"name":"example42/nagios","version_requirement":"2.0.17"}
   ]
 }
