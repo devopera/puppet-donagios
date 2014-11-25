@@ -91,19 +91,19 @@ class donagios::nrpe-client (
       }
 
       # if there's a www-data group
-      if defined('dozendserver') {
+      if defined('doapache') {
         # give nrpe access to read files like apache/zend
         exec { 'donagios-nagios-user-group-add' :
           path => '/usr/bin:/usr/sbin',
           command => "gpasswd --add ${user_name_nagios} ${group_name}",
-          require => [Class['nrpe'], Class['dozendserver']],
+          require => [Class['nrpe'], Class['doapache']],
           before => [Anchor['donagios-nrpe-client-ready']],
         }
         if ($user_name_nrpe != user_name_nagios) {
           exec { 'donagios-nrpe-user-group-add' :
             path => '/usr/bin:/usr/sbin',
             command => "gpasswd --add ${user_name_nrpe} ${group_name}",
-            require => [Class['nrpe'], Class['dozendserver']],
+            require => [Class['nrpe'], Class['doapache']],
             before => [Anchor['donagios-nrpe-client-ready']],
           }
         }
