@@ -6,6 +6,10 @@ Devopera module for managing hosted nagios config.  You can [download a virtual 
 Changelog
 ---------
 
+2014-11-25
+
+  * Made nagios sensitive to but not dependent upon doapache, but it does need a web server for admin UI
+
 2014-03-06
 
   * Added nrpe/nagios users to www-data group to allow monitoring of file timestamps, e.g. database backups
