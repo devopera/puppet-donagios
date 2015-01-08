@@ -45,6 +45,8 @@ class donagios::nrpe-client (
 
 ) inherits donagios::params {
 
+  @domotd::register { "NRPE(${port})" : }
+
   # set package name
   $packagename = $::operatingsystem ? {
     /(?i:Debian|Ubuntu|Mint)/   => 'nagios-nrpe-server',
