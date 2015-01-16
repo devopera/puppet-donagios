@@ -29,7 +29,8 @@ class donagios (
   case $provider {
     'duritong' : {
       class { 'nagios::target' :
-        parents => $parents,
+        # don't include parents because it breaks nagios_host.cfg when realised
+        # parents => $parents,
         nagios_alias => $::fqdn,
       }
     }
