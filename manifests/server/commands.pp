@@ -25,6 +25,9 @@ class donagios::server::commands (
   nagios_command { 'check_nrpe_procs_puppetmaster' :
     command_line => '$USER1$/check_nrpe -H $HOSTADDRESS$ -p 15666 -c check_nrpe_procs_puppetmaster'
   }
+  nagios_command { 'check_nrpe_procs_puppetserver' :
+    command_line => '$USER1$/check_nrpe -H $HOSTADDRESS$ -p 15666 -c check_nrpe_procs_puppetserver'
+  }
   nagios_command { 'check_nrpe_procs_puppetdb' :
     command_line => '$USER1$/check_nrpe -H $HOSTADDRESS$ -p 15666 -c check_nrpe_procs_puppetdb'
   }

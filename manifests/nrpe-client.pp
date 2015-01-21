@@ -17,6 +17,7 @@ class donagios::nrpe-client (
   $command_list = [
     'command[check_nrpe_procs_smbd]=<%= scope.lookupvar(\'nrpe::pluginsdir\') %>/check_procs -w 1: -c 1: -a smbd',
     'command[check_nrpe_procs_puppetmaster]=<%= scope.lookupvar(\'nrpe::pluginsdir\') %>/check_procs -w 1: -c 1: -a \'puppet master\'',
+    'command[check_nrpe_procs_puppetserver]=<%= scope.lookupvar(\'nrpe::pluginsdir\') %>/check_procs -w 1: -c 1: -a \'puppetserver\'',
     'command[check_nrpe_procs_puppetdb]=<%= scope.lookupvar(\'nrpe::pluginsdir\') %>/check_procs -w 1: -c 1: -a puppetdb',
     'command[check_nrpe_procs_postfix]=<%= scope.lookupvar(\'nrpe::pluginsdir\') %>/check_procs -w 1: -c 1: -a postfix',
     # use full path to node executable so as not to match Zend's MonitorNode
