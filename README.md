@@ -6,6 +6,10 @@ Devopera module for managing hosted nagios config.  You can [download a virtual 
 Changelog
 ---------
 
+2015-01-22
+
+  * Added email alerting by default, but it can be disabled with user_alert = false
+
 2014-11-25
 
   * Made nagios sensitive to but not dependent upon doapache, but it does need a web server for admin UI
