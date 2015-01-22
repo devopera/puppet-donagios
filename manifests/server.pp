@@ -6,6 +6,7 @@ class donagios::server (
 
   $user = 'web',
   $user_email = 'web@localhost',
+  $user_alert = true,
   $group = 'nagios',
   $group_web = 'www-data',
 
@@ -52,6 +53,27 @@ class donagios::server (
 
   # if we've got a message of the day, include
   @domotd::register { "Nagios(${webadmin_port})" : }
+
+  if ($user_alert) {
+    # setup user to be notified
+    nagios_contact { "nagios-notification-user-${user}" : 
+      contact_name => $user,
+      email => $user_email,
+      host_notification_commands    => 'notify-host-by-email',
+      host_notification_options     => 'd,r',
+      host_notification_period      => '24x7',
+      service_notification_commands => 'notify-service-by-email',
+      service_notification_options  => 'w,u,c,r',
+      service_notification_period   => '24x7',
+    }
+    # don't notify the root user
+    Nagios_contact <| email == 'root@localhost' |> {
+      register => 0,
+    }
+    Nagios_contactgroup <| alias == 'Nagios Administrators' |> {
+      members => $user,
+    }
+  }
 
   # work out if we're staging out a new puppetmaster, or puppetting ourselves from a local one
   # Note
