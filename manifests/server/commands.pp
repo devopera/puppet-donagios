@@ -66,6 +66,16 @@ class donagios::server::commands (
     # -p password
     command_line => '$USER1$/check_disk_smb -H $ARG1$ -s $ARG2$ -W $ARG3$ -a $ARG4$ -u $ARG5$ -p $ARG6$',
   }
+
+  # check file age
+  nagios_command { 'check_file_age' :
+    # -f filename
+    # -w age in seconds (warning)
+    # -c age in seconds (critical)
+    # -W min size in bytes (warning)
+    # -C min size in bytes (critical)
+    command_line => '$USER1$/check_file_age -w $ARG2$ -c $ARG3$ -W $ARG4$ -C $ARG5$ -f $ARG1$',
+  }
   
   # check https while ignoring cert issues
   nagios_command { 'check_https_nocert' :
