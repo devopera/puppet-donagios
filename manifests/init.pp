@@ -6,6 +6,7 @@ class donagios (
 
   # by default, this target's parent is the puppetmaster
   $parents = $puppetmaster_ipaddress,
+  $address = $::ipaddress,
 
   # by default, realise all local services (send to puppetmaster)
   $realise_local = true,
@@ -32,6 +33,7 @@ class donagios (
         # don't include parents because it breaks nagios_host.cfg when realised
         # parents => $parents,
         nagios_alias => $::fqdn,
+        address => $address,
       }
     }
     'example42' : {
