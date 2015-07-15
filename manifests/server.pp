@@ -227,7 +227,7 @@ class donagios::server (
 
   # regenerate nagios password file from scratch
   exec { 'donagios-set-webadmin-password-cmd' :
-    path => '/bin:/usr/bin',
+    path => '/bin:/usr/bin:/sbin:/usr/sbin',
     command => "htpasswd -bc /etc/nagios/htpasswd.users '${webadmin_user}' '${webadmin_password}'",
     user => $user,
     group => $group,
