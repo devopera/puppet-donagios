@@ -90,4 +90,14 @@ class donagios::server::commands (
     command_line => '$USER1$/check_http -H $HOSTADDRESS$ -I $HOSTADDRESS$ -u $ARG1$ -p $ARG2$ -a $ARG3$',
   }
 
+    # create command for handling detailed https checks
+  nagios_command { 'check_https_port_url_content_auth' :
+    # -H hostname
+    # -p port
+    # -u path
+    # -s string to match
+    # -a auth username:password
+    # --expect response code (e.g. 200)
+    command_line => '$USER1$/check_http --ssl -H $ARG1$ -p $ARG2$ -u $ARG3$ -s $ARG4$ -a $ARG5$ --expect $ARG6$',
+  }
 }

@@ -20,7 +20,7 @@ class donagios::nrpe-client (
     'command[check_nrpe_procs_puppetserver]=<%= scope.lookupvar(\'nrpe::pluginsdir\') %>/check_procs -w 1: -c 1: -a \'puppetserver\'',
     'command[check_nrpe_procs_puppetdb]=<%= scope.lookupvar(\'nrpe::pluginsdir\') %>/check_procs -w 1: -c 1: -a puppetdb',
     'command[check_nrpe_procs_postfix]=<%= scope.lookupvar(\'nrpe::pluginsdir\') %>/check_procs -w 1: -c 1: -a postfix',
-    # use full path to node executable so as not to match Zend's MonitorNode
+    # use full path to node executable so as not to match Zends MonitorNode
     'command[check_nrpe_procs_node]=<%= scope.lookupvar(\'nrpe::pluginsdir\') %>/check_procs -w 1: -c 1: -a /usr/bin/node',
     # issue WARNING if free space less than 20%
     # issue CRITICAL if free space less than 10%
