@@ -1,0 +1,28 @@
+
+module lightnagios_patch 1.0;
+
+require {
+	type nagios_t;
+	type httpd_log_t;
+	type devlog_t;
+	type httpd_sys_rw_content_t;
+	type nagios_exec_t;
+	type syslogd_t;
+	type nagios_services_plugin_t;
+	type httpd_nagios_script_t;
+	class sock_file write;
+	class unix_dgram_socket { create connect sendto };
+	class file { read execute_no_trans };
+}
+
+#============= httpd_nagios_script_t ==============
+allow httpd_nagios_script_t httpd_log_t:file read;
+allow httpd_nagios_script_t httpd_sys_rw_content_t:file read;
+
+#============= nagios_services_plugin_t ==============
+allow nagios_services_plugin_t devlog_t:sock_file write;
+allow nagios_services_plugin_t self:unix_dgram_socket { create connect };
+allow nagios_services_plugin_t syslogd_t:unix_dgram_socket sendto;
+
+#============= nagios_t ==============
+allow nagios_t nagios_exec_t:file execute_no_trans;

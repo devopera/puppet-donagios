@@ -176,23 +176,29 @@ class donagios::server (
       class { 'nagios::headless' :
       }->
       class { 'nagios::defaults' :
-        before => Exec['donagios-permission-cleanup-cmd'],
+        before => File['donagios-permission-cleanup-cmd'],
       }
     }
     'example42' : {
       class { 'nagios' :
         install_prerequisites => false,
-        before => Exec['donagios-permission-cleanup-cmd'],
+        before => File['donagios-permission-cleanup-cmd'],
       }
     }
   }
 
   # clean up dir with wrong permissions
-  exec { 'donagios-permission-cleanup-cmd' :
-    path => '/bin:/usr/bin',
-    command => 'rm -rf /var/spool/nagios/cmd',
-  }->
-
+  #exec { 'donagios-permission-cleanup-cmd' :
+  #  path => '/bin:/usr/bin',
+  #  command => 'rm -rf /var/spool/nagios/cmd',
+  #}->
+  file { 'donagios-permission-cleanup-cmd':
+    path => '/var/spool/nagios/cmd',
+    ensure => 'directory',
+    owner  => 'nagios',
+    group  => 'nagios',
+    mode   => '0770',
+  }
   # overwrite nagios apache config with template
   file { 'donagios-overwrite-vhost-config' :
     path => '/etc/httpd/conf.d/nagios.conf',
@@ -247,6 +253,27 @@ class donagios::server (
       # from nagios_checkdisk_plugin_exec_t -> nagios_services_plugin_exec_t
       context => 'nagios_services_plugin_exec_t',
       notify => [Service['nagios']],
+    }
+    # manually copy pp file over first
+    file { '/usr/share/selinux/donagios-nagios-selinux-write-tmp.pp':
+      ensure => 'present',
+      source => 'puppet:///modules/donagios/nagios_manual_additions.pp',
+    }->
+    # load selinux module
+    selinux::module { 'donagios-nagios-selinux-write-tmp':
+      ensure => 'present',
+      source => 'puppet:///modules/donagios/nagios_manual_additions.te',
+    }
+    # repeat for patch
+    # @todo merge patch into manual additions
+    file { '/usr/share/selinux/donagios-nagios-selinux-patch.pp':
+      ensure => 'present',
+      source => 'puppet:///modules/donagios/lightnagios_patch.pp',
+    }->
+    # load selinux module
+    selinux::module { 'donagios-nagios-selinux-patch':
+      ensure => 'present',
+      source => 'puppet:///modules/donagios/lightnagios_patch.te',
     }
   }  
 

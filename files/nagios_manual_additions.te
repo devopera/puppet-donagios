@@ -1,0 +1,13 @@
+
+module nagios_manual_additions 1.0;
+
+require {
+	type nagios_t;
+	type initrc_tmp_t;
+	class capability chown;
+	class file write;
+}
+
+#============= nagios_t ==============
+allow nagios_t initrc_tmp_t:file write;
+allow nagios_t self:capability chown;
