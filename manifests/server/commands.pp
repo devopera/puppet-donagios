@@ -100,4 +100,11 @@ class donagios::server::commands (
     # --expect response code (e.g. 200)
     command_line => '$USER1$/check_http --ssl -H $ARG1$ -p $ARG2$ -u $ARG3$ -s $ARG4$ -a $ARG5$ --expect $ARG6$',
   }
+
+  # check https content using regex
+  nagios_command { 'check_https_port_url_regex' :
+    # -r regex (case sensitive)
+    command_line => '$USER1$/check_http --ssl -H $ARG1$ -p $ARG2$ -u $ARG3$ -r $ARG4$',
+  }
+
 }
